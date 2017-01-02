@@ -194,9 +194,11 @@ class USBWatchDog(object):
     def __get_feature_report(self, fr_id, length):
         self.__check_open()
         array = self._h.get_feature_report(fr_id, length+1)  # report id, max len
-        if len(array) != length+1:
-            raise ValueError('received unexpected value')
-        return array[1:]
+        # hidapi's windows/hid.c seems to append an extra byte at least under Windows 10 (bug?)
+        # We need to strip this off.
+        if len(array) < length+1:
+            raise ValueError('received unexpected value', array)
+        return array[1:length+1]
 
     def __send_feature_report(self, array):
         self.__check_open()
