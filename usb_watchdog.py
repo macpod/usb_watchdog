@@ -409,11 +409,11 @@ def vprint(*print_args, **print_kwargs):
 
 def general_configure(watchdog):
     try:
-        if args.nonvolatile_timeout is not None:
+        if hasattr(args, 'nonvolatile_timeout') and args.nonvolatile_timeout is not None:
             vprint('Setting nonvolatile timeout to', args.nonvolatile_timeout, 'seconds')
             watchdog.set_nonvolatile_timeout(args.nonvolatile_timeout)
 
-        if args.timeout is not None:
+        if hasattr(args, 'timeout') and args.timeout is not None:
             vprint('Setting volatile timeout to', args.timeout, 'seconds')
             watchdog.set_volatile_timeout(args.timeout)
 
@@ -447,8 +447,8 @@ def general_configure(watchdog):
         if args.buzzer_frequency is not None:
             vprint('Setting volatile buzzer frequency to', args.buzzer_frequency)
             watchdog.set_volatile_buzzer_frequency(args.buzzer_frequency)
-        
-        if args.nonvolatile_beacon_mode is not None:
+
+        if hasattr(args, 'nonvolatile_beacon_mode') and args.nonvolatile_beacon_mode is not None:
             vprint('Setting nonvolatile beacon mode to', args.nonvolatile_beacon_mode)
             watchdog.set_nonvolatile_beacon_mode(
                 True if args.nonvolatile_beacon_mode == 'on' else False)
@@ -580,6 +580,7 @@ def handle_mode_action(watchdog):
 
 
 def handle_beacon_action(watchdog):
+    general_configure(watchdog)
     try:
         triggered, reboot_indicator, beacon_mode, counter = watchdog.get_status()
     except (IOError, ValueError), e:
@@ -591,7 +592,6 @@ def handle_beacon_action(watchdog):
         raise USBWatchDogError(1)
 
     try:
-        print(args)
         vprint('Setting beacon to', args.beacon_state)
         watchdog.set_beacon_state(True if args.beacon_state == 'on' else False)
     except (IOError, ValueError), e:
